@@ -1,0 +1,40 @@
+services:
+  paperclip:
+    image: ghcr.io/paperclip-ai/paperclip:latest
+    container_name: paperclip
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    volumes:
+      - paperclip_data:/app/data
+    networks:
+      - dispersora_net
+
+  hermes-adapter:
+    image: ghcr.io/hermes-agent/hermes-paperclip-adapter:latest
+    container_name: hermes-adapter
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEFAULT_MODEL=gemini-1.5-pro
+      - PAPERCLIP_URL=http://paperclip:3000
+    depends_on:
+      - paperclip
+    volumes:
+      - hermes_data:/root/.hermes
+    networks:
+      - dispersora_net
+
+volumes:
+  paperclip_data:
+  hermes_data:
+
+networks:
+  dispersora_net:
+    driver: bridge
