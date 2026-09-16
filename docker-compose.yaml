@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   paperclip:
-    image: ghcr.io/paperclipai/paperclip:latest
+    build:
+      context: .
+      dockerfile: paperclip.Dockerfile
     container_name: paperclip
     restart: unless-stopped
     ports:
@@ -12,6 +14,7 @@ services:
       - NODE_ENV=production
       - BETTER_AUTH_SECRET=dispersora-paperclip-secure-auth-jwt-token-2026
       - BETTER_AUTH_URL=https://oficina.dispersora.digital
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - paperclip_data:/paperclip/instances
     networks:
