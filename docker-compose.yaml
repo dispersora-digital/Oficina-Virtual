@@ -6,7 +6,7 @@ services:
     container_name: paperclip
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3010:3000"
     environment:
       - PORT=3000
       - NODE_ENV=production
@@ -22,7 +22,7 @@ services:
     container_name: hermes-adapter
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8090:8080"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DEFAULT_MODEL=gemini-1.5-pro
