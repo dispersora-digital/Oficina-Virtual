@@ -1,50 +1,25 @@
-version: '3.8'
+FROM debian:bookworm-slim
 
-services:
-  paperclip:
-    image: ghcr.io/paperclipai/paperclip:latest
-    container_name: paperclip
-    restart: unless-stopped
-    ports:
-      - "3010:3000"
-    environment:
-      - PORT=3000
-      - NODE_ENV=production
-      - BETTER_AUTH_SECRET=dispersora-paperclip-secure-auth-jwt-token-2026
-      - BETTER_AUTH_URL=https://oficina.dispersora.digital
-    volumes:
-      - paperclip_data:/paperclip/instances
-    networks:
-      - dispersora_net
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-  hermes-adapter:
-    build:
-      context: .
-      dockerfile: hermes.Dockerfile
-    container_name: hermes-adapter
-    restart: unless-stopped
-    init: true
-    ports:
-      - "8090:8080"
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - DEFAULT_MODEL=gemini-1.5-pro
-      - PAPERCLIP_URL=http://paperclip:3000
-      - PORT=8080
-      - HERMES_DASHBOARD_AUTH_USERNAME=admin
-      - HERMES_DASHBOARD_AUTH_PASSWORD=DispersoraAdmin2026!
-      - HERMES_BIND_HOST=0.0.0.0
-    volumes:
-      - hermes_data:/root/.hermes
-    depends_on:
-      - paperclip
-    networks:
-      - dispersora_net
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    bash \
+    python3 \
+    python3-pip \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-networks:
-  dispersora_net:
-    driver: bridge
+# Instalación oficial de Hermes Agent
+RUN curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 
-volumes:
-  paperclip_data:
-  hermes_data:
+ENV PATH="/root/.local/bin:$PATH"
+
+WORKDIR /app
+
+# Puerto por defecto para el servicio/adaptador
+EXPOSE 8080
+
+CMD ["hermes", "serve", "--host", "0.0.0.0", "--port", "8080"]
