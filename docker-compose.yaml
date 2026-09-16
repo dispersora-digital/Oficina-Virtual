@@ -23,7 +23,6 @@ services:
       dockerfile: hermes.Dockerfile
     container_name: hermes-adapter
     restart: unless-stopped
-    init: true
     ports:
       - "8090:8080"
     environment:
@@ -31,9 +30,6 @@ services:
       - DEFAULT_MODEL=gemini-1.5-pro
       - PAPERCLIP_URL=http://paperclip:3000
       - PORT=8080
-      - HERMES_HOST=127.0.0.1
-      - DASHBOARD_HOST=127.0.0.1
-    command: ["adapter", "--host", "127.0.0.1", "--port", "8080"]
     volumes:
       - hermes_data:/root/.hermes
     depends_on:
