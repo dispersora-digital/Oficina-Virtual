@@ -14,12 +14,6 @@ services:
       - BETTER_AUTH_URL=https://oficina.dispersora.digital
     volumes:
       - paperclip_data:/paperclip/instances
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/ || curl -f http://localhost:3000/ || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 25s
     networks:
       - dispersora_net
 
@@ -37,13 +31,13 @@ services:
       - DEFAULT_MODEL=gemini-1.5-pro
       - PAPERCLIP_URL=http://paperclip:3000
       - PORT=8080
-      - HOST=127.0.0.1
-      - DASHBOARD_HOST=127.0.0.1
+      - HERMES_DASHBOARD_AUTH_USERNAME=admin
+      - HERMES_DASHBOARD_AUTH_PASSWORD=DispersoraAdmin2026!
+      - HERMES_BIND_HOST=0.0.0.0
     volumes:
       - hermes_data:/root/.hermes
     depends_on:
-      paperclip:
-        condition: service_healthy
+      - paperclip
     networks:
       - dispersora_net
 
