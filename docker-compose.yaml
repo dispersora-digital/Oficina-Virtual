@@ -31,9 +31,9 @@ services:
       - DEFAULT_MODEL=gemini-1.5-pro
       - PAPERCLIP_URL=http://paperclip:3000
       - PORT=8080
-      - HERMES_DASHBOARD_AUTH_USERNAME=admin
-      - HERMES_DASHBOARD_AUTH_PASSWORD=DispersoraAdmin2026!
-      - HERMES_BIND_HOST=0.0.0.0
+      - HERMES_HOST=127.0.0.1
+      - DASHBOARD_HOST=127.0.0.1
+    command: ["adapter", "--host", "127.0.0.1", "--port", "8080"]
     volumes:
       - hermes_data:/root/.hermes
     depends_on:
