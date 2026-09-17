@@ -18,9 +18,7 @@ RUN pip3 install --no-cache-dir --break-system-packages --ignore-installed packa
 # Asegurar permisos de ejecución accesibles para el usuario node
 RUN which hermes && hermes --version || true
 
-# --- SOLUCIÓN DEFINITIVA PARA EL JWT ---
-# Forzar la creación de la estructura base y ejecutar el onboarding de forma no interactiva
-RUN mkdir -p /paperclip/instances/default && \
-    npx paperclipai onboard --setup-path quickstart
+# Asegurar que el directorio de instancias exista con los permisos adecuados
+RUN mkdir -p /paperclip/instances/default && chown -R node:node /paperclip/instances
 
 USER node
