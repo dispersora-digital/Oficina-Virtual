@@ -15,6 +15,7 @@ services:
       - BETTER_AUTH_SECRET=dispersora-paperclip-secure-auth-jwt-token-2026
       - BETTER_AUTH_URL=https://oficina.dispersora.digital
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PAPERCLIP_AGENT_JWT_SECRET=dispersora-hermes-secure-agent-jwt-token-2026
     volumes:
       - paperclip_data:/paperclip/instances
     networks:
@@ -34,6 +35,7 @@ services:
       - DEFAULT_MODEL=gemini-1.5-pro
       - PAPERCLIP_URL=http://paperclip:3000
       - PORT=8080
+      - PAPERCLIP_AGENT_JWT_SECRET=dispersora-hermes-secure-agent-jwt-token-2026
     volumes:
       - hermes_data:/root/.hermes
     depends_on:
