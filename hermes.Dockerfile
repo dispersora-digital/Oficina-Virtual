@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     ca-certificates \
+    ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalación oficial de Hermes Agent
