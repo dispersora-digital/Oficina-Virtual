@@ -18,7 +18,11 @@ RUN pip3 install --no-cache-dir --break-system-packages --ignore-installed packa
 # Asegurar permisos de ejecución accesibles para el usuario node
 RUN which hermes && hermes --version || true
 
-# Asegurar que el directorio de instancias exista con los permisos adecuados
-RUN mkdir -p /paperclip/instances/default && chown -R node:node /paperclip/instances
+# --- SOLUCIÓN AL ERROR DE PERMISOS EACCES ---
+# Crear las carpetas de almacenamiento que usa Hermes y asignar la propiedad al usuario node
+RUN mkdir -p /paperclip/instances/default \
+    && mkdir -p /paperclip/.hermes \
+    && chown -R node:node /paperclip/instances \
+    && chown -R node:node /paperclip/.hermes
 
 USER node
