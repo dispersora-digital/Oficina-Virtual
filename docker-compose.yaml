@@ -1,67 +1,126 @@
-version: '3.8'
+# Coolify → New Resource → Public Git Repository → Docker Compose
+# Repo: https://github.com/dispersora-digital/Oficina-Virtual
+# Branch: main
+# Base Directory: /
+# Compose file: docker-compose.yaml
+#
+# Paperclip (orquestador) → Hermes (agentes) → LiteLLM → Google Gemini
+#
+# No publiques LiteLLM ni Hermes en un dominio. Solo Paperclip
+# debe tener FQDN en Coolify (ej. https://oficina.dispersora.digital:3100).
 
 services:
   litellm:
     build:
       context: .
       dockerfile: litellm.Dockerfile
-    container_name: litellm
     restart: unless-stopped
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-    networks:
-      - dispersora_net
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness')\" || exit 1",
+        ]
+      interval: 15s
+      timeout: 8s
+      retries: 10
+      start_period: 40s
 
   paperclip:
     build:
       context: .
       dockerfile: paperclip.Dockerfile
-    container_name: paperclip
     restart: unless-stopped
-    ports:
-      - "3010:3000"
+    expose:
+      - "3100"
     environment:
-      - PORT=3000
-      - NODE_ENV=production
-      - BETTER_AUTH_SECRET=dispersora-paperclip-secure-auth-jwt-token-2026
-      - BETTER_AUTH_URL=https://oficina.dispersora.digital
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - PAPERCLIP_AGENT_JWT_SECRET=dispersora-hermes-secure-agent-jwt-token-2026
+      HOST: "0.0.0.0"
+      PORT: "3100"
+      SERVE_UI: "true"
+      NODE_ENV: production
+      PAPERCLIP_HOME: /paperclip
+      PAPERCLIP_DEPLOYMENT_MODE: ${PAPERCLIP_DEPLOYMENT_MODE:-authenticated}
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: ${PAPERCLIP_DEPLOYMENT_EXPOSURE:-public}
+      # Coolify rellena SERVICE_URL_PAPERCLIP_3100 cuando asignas dominio al servicio.
+      SERVICE_URL_PAPERCLIP_3100: /
+      PAPERCLIP_PUBLIC_URL: ${SERVICE_URL_PAPERCLIP_3100}
+      BETTER_AUTH_URL: ${SERVICE_URL_PAPERCLIP_3100}
+      BETTER_AUTH_BASE_URL: ${SERVICE_URL_PAPERCLIP_3100}
+      BETTER_AUTH_TRUSTED_ORIGINS: ${SERVICE_URL_PAPERCLIP_3100}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
+      PAPERCLIP_AGENT_JWT_SECRET: ${PAPERCLIP_AGENT_JWT_SECRET:?}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      OPENAI_API_BASE: http://litellm:4000/v1
+      OPENAI_BASE_URL: http://litellm:4000/v1
+      OPENAI_API_KEY: ${LITELLM_MASTER_KEY}
+      HERMES_GATEWAY_API_BASE_URL: http://hermes-adapter:8080
+      HERMES_GATEWAY_API_KEY: ${API_SERVER_KEY:?}
+      HERMES_GATEWAY_ALLOW_INSECURE_HTTP: "1"
     volumes:
-      - paperclip_data:/paperclip/instances
-    networks:
-      - dispersora_net
+      - paperclip_data:/paperclip
+    depends_on:
+      litellm:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3100/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 20s
+      timeout: 8s
+      retries: 20
+      start_period: 90s
 
   hermes-adapter:
     build:
       context: .
       dockerfile: hermes.Dockerfile
-    container_name: hermes-adapter
     restart: unless-stopped
     init: true
-    ports:
-      - "8090:8080"
+    expose:
+      - "8080"
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - DEFAULT_MODEL=gemini-1.5-pro
-      - PAPERCLIP_URL=http://paperclip:3000
-      - PORT=8080
-      - PAPERCLIP_AGENT_JWT_SECRET=dispersora-hermes-secure-agent-jwt-token-2026
-      - OPENAI_API_BASE=http://litellm:4000/v1
-      - OPENAI_API_KEY=sk-litellm-proxy-internal
+      PORT: "8080"
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemini-flash}
+      LITELLM_BASE_URL: http://litellm:4000/v1
+      OPENAI_API_BASE: http://litellm:4000/v1
+      OPENAI_BASE_URL: http://litellm:4000/v1
+      OPENAI_API_KEY: ${LITELLM_MASTER_KEY}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      PAPERCLIP_URL: http://paperclip:3100
+      PAPERCLIP_API_URL: http://paperclip:3100
+      PAPERCLIP_AGENT_JWT_SECRET: ${PAPERCLIP_AGENT_JWT_SECRET}
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8080"
+      API_SERVER_KEY: ${API_SERVER_KEY:?}
+      API_SERVER_CORS_ORIGINS: "*"
+      HERMES_GATEWAY_ALLOW_INSECURE_HTTP: "1"
     volumes:
       - hermes_data:/root/.hermes
     depends_on:
-      - paperclip
-      - litellm
-    networks:
-      - dispersora_net
-
-networks:
-  dispersora_net:
-    driver: bridge
+      litellm:
+        condition: service_healthy
+      paperclip:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:8080/health || curl -fsS http://127.0.0.1:8080/v1/models || exit 1",
+        ]
+      interval: 20s
+      timeout: 8s
+      retries: 12
+      start_period: 50s
 
 volumes:
   paperclip_data:
