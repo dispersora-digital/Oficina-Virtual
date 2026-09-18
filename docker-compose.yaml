@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./litellm-config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+    networks:
+      - dispersora_net
+
   paperclip:
     build:
       context: .
@@ -36,10 +50,13 @@ services:
       - PAPERCLIP_URL=http://paperclip:3000
       - PORT=8080
       - PAPERCLIP_AGENT_JWT_SECRET=dispersora-hermes-secure-agent-jwt-token-2026
+      - OPENAI_API_BASE=http://litellm:4000/v1
+      - OPENAI_API_KEY=sk-litellm-proxy-internal
     volumes:
       - hermes_data:/root/.hermes
     depends_on:
       - paperclip
+      - litellm
     networks:
       - dispersora_net
 
