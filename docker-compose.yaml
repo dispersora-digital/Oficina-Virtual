@@ -2,16 +2,15 @@ version: '3.8'
 
 services:
   litellm:
-    image: ghcr.io/berriai/litellm:main-latest
+    build:
+      context: .
+      dockerfile: litellm.Dockerfile
     container_name: litellm
     restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    volumes:
-      - ./litellm-config.yaml:/app/config.yaml
-    command: ["--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
     networks:
       - dispersora_net
 
