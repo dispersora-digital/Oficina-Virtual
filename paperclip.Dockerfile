@@ -2,7 +2,7 @@ FROM ghcr.io/paperclipai/paperclip:latest
 
 USER root
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
@@ -11,23 +11,30 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir --break-system-packages --ignore-installed packaging hermes-agent
+RUN pip3 install --no-cache-dir --break-system-packages --ignore-installed packaging hermes-agent \
+    || pip3 install --no-cache-dir --break-system-packages hermes-agent
 
 RUN mkdir -p /paperclip/instances/default \
-    && mkdir -p /paperclip/.hermes \
-    && mkdir -p /home/node/.hermes \
-    && mkdir -p /root/.hermes \
-    && chown -R node:node /paperclip/instances \
-    && chown -R node:node /paperclip/.hermes \
-    && chown -R node:node /home/node/.hermes
+    /paperclip/.hermes \
+    /home/node/.hermes \
+    /root/.hermes \
+    && chown -R node:node /paperclip /home/node/.hermes
 
-# Crear configuraciones globales para root y node (sin forzar provider)
-RUN printf 'model: "gemini-1.5-pro"\nbase_url: "http://litellm:4000/v1"\napi_key: "sk-litellm-proxy-internal"\n' > /root/.hermes/config.yaml && \
-    printf 'model: "gemini-1.5-pro"\nbase_url: "http://litellm:4000/v1"\napi_key: "sk-litellm-proxy-internal"\n' > /home/node/.hermes/config.yaml && \
-    chown node:node /home/node/.hermes/config.yaml
+# Hermes dentro de Paperclip también sale por LiteLLM → Gemini.
+# El provider es custom (OpenAI-compatible), no el nativo gemini.
+RUN printf '%s\n' \
+    'model:' \
+    '  provider: custom' \
+    '  default: gemini-flash' \
+    '  base_url: http://litellm:4000/v1' \
+    '  api_mode: chat_completions' \
+    > /root/.hermes/config.yaml \
+    && cp /root/.hermes/config.yaml /home/node/.hermes/config.yaml \
+    && chown node:node /home/node/.hermes/config.yaml
 
+ENV HOST=0.0.0.0
+ENV PORT=3100
 ENV OPENAI_API_BASE=http://litellm:4000/v1
 ENV OPENAI_BASE_URL=http://litellm:4000/v1
-ENV OPENAI_API_KEY=sk-litellm-proxy-internal
 
 USER node
