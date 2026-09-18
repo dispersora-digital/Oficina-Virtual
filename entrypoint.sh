@@ -14,12 +14,17 @@ dashboard:
 llm:
   provider: "google"
   model: "gemini-2.5-flash" # Puedes cambiarlo a gemini-2.5-pro según tu flujo
+
+agent:
+  tool_call_mode: "native"
+  system_prompt_mode: "strict"
 EOF
 
 # 2. Inyección de la credencial en el archivo interno de Hermes (.env)
 # Esto asegura que hermes serve lea la llave nativamente si no hereda el entorno de Docker
 if [ -n "$GEMINI_API_KEY" ]; then
   echo "GEMINI_API_KEY=$GEMINI_API_KEY" > /root/.hermes/.env
+  export GEMINI_API_KEY="$GEMINI_API_KEY"
   echo "Google Gemini API Key vinculada al entorno interno de Hermes."
 fi
 
