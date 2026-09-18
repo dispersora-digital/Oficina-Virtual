@@ -2,8 +2,9 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV PATH="/root/.local/bin:${PATH}"
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     bash \
@@ -13,10 +14,7 @@ RUN apt-get update && apt-get install -y \
     ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalación oficial de Hermes Agent
 RUN curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
-
-ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR /app
 
