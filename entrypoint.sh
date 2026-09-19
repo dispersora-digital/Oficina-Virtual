@@ -22,10 +22,20 @@ providers:
     discover_models: true
 
 agent:
-  max_turns: 90
+  max_turns: 16
+  disabled_toolsets:
+    - terminal
+    - code_execution
+    - skills
+
+platform_toolsets:
+  api_server:
+    - web
+    - file
+    - memory
 
 tool_loop_guardrails:
-  non_interactive_hard_stop_enabled: false
+  non_interactive_hard_stop_enabled: true
 EOF
 
 cat > /root/.hermes/.env <<EOF
