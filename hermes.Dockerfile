@@ -19,7 +19,9 @@ RUN curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 WORKDIR /app
 
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY paperclip-done.sh /app/paperclip-done.sh
+RUN chmod +x /app/entrypoint.sh /app/paperclip-done.sh \
+    && ln -sf /app/paperclip-done.sh /usr/local/bin/paperclip-done
 
 EXPOSE 8080
 

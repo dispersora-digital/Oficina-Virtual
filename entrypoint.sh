@@ -22,17 +22,25 @@ providers:
     discover_models: true
 
 agent:
-  max_turns: 16
+  max_turns: 12
   disabled_toolsets:
-    - terminal
     - code_execution
-    - skills
 
 platform_toolsets:
   api_server:
     - web
     - file
     - memory
+    - terminal
+
+approvals:
+  mode: smart
+  unattended_mode: deny
+
+command_allowlist:
+  - paperclip-done
+  - /usr/local/bin/paperclip-done
+  - /app/paperclip-done.sh
 
 tool_loop_guardrails:
   non_interactive_hard_stop_enabled: true
@@ -46,6 +54,11 @@ API_SERVER_ENABLED=true
 API_SERVER_HOST=0.0.0.0
 API_SERVER_PORT=${PORT}
 API_SERVER_KEY=${API_SERVER_KEY:-${LITELLM_KEY}}
+PAPERCLIP_API_URL=${PAPERCLIP_API_URL:-http://paperclip:3100}
+PAPERCLIP_URL=${PAPERCLIP_URL:-http://paperclip:3100}
+PAPERCLIP_API_KEY=${PAPERCLIP_API_KEY:-}
+PAPERCLIP_AGENT_ID=${PAPERCLIP_AGENT_ID:-}
+PAPERCLIP_COMPANY_ID=${PAPERCLIP_COMPANY_ID:-}
 EOF
 
 export PATH="/root/.local/bin:${PATH}"
@@ -56,6 +69,22 @@ export API_SERVER_KEY="${API_SERVER_KEY:-${LITELLM_KEY}}"
 export OPENAI_API_BASE="${LITELLM_BASE_URL}"
 export OPENAI_BASE_URL="${LITELLM_BASE_URL}"
 export OPENAI_API_KEY="${LITELLM_KEY}"
+export PAPERCLIP_API_URL="${PAPERCLIP_API_URL:-http://paperclip:3100}"
+export PAPERCLIP_URL="${PAPERCLIP_URL:-http://paperclip:3100}"
+export PAPERCLIP_API_KEY="${PAPERCLIP_API_KEY:-}"
+export PAPERCLIP_AGENT_ID="${PAPERCLIP_AGENT_ID:-}"
+export PAPERCLIP_COMPANY_ID="${PAPERCLIP_COMPANY_ID:-}"
+mkdir -p /usr/local/bin
+if [ -x /app/paperclip-done.sh ]; then
+  ln -sf /app/paperclip-done.sh /usr/local/bin/paperclip-done
+fi
+cat > /root/.hermes/AGENTS.md <<'AGENTS'
+Al terminar una issue ejecuta exactamente:
+paperclip-done ISSUE_ID "comentario breve"
+ISSUE_ID es el UUID de la issue (no el codigo DIS-n).
+Ese comando hace PATCH status=done. Un comentario Markdown no cierra la issue.
+No uses ps, node, jwt ni execute_code.
+AGENTS
 
 if command -v hermes >/dev/null 2>&1; then
   if hermes gateway run --help >/dev/null 2>&1; then
