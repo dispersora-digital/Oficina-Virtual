@@ -52,5 +52,7 @@ litellm_settings:
   set_verbose: false
   request_timeout: 180
 
+# Sin master_key: el proxy queda en la red interna de Coolify.
+# Con master_key y sin DATABASE_URL LiteLLM responde 400 "No connected db".
 general_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
+  store_model_in_db: false
