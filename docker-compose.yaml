@@ -20,7 +20,9 @@ services:
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY:?}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
-      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?}
+      # No pasar LITELLM_MASTER_KEY: activa virtual keys y, sin DB,
+      # /v1/models responde 400 "No connected db".
+      LITELLM_MASTER_KEY: ""
     healthcheck:
       test:
         [

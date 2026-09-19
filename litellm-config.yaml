@@ -52,7 +52,7 @@ litellm_settings:
   set_verbose: false
   request_timeout: 180
 
-# Sin master_key: el proxy queda en la red interna de Coolify.
-# Con master_key y sin DATABASE_URL LiteLLM responde 400 "No connected db".
+# Sin master_key. El entrypoint también hace unset de LITELLM_MASTER_KEY
+# porque Coolify puede inyectar el secreto igual y reactivar auth.
 general_settings:
   store_model_in_db: false
