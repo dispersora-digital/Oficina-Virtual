@@ -1,10 +1,13 @@
 # LiteLLM — único punto de salida hacia Google Gemini (AI Studio).
 # El prefijo gemini/ es obligatorio. Sin él LiteLLM intenta Vertex AI.
+#
+# 2026-09: gemini-2.5-flash ya no acepta usuarios/claves nuevas.
+# Google indica migrar a gemini-3.6-flash.
 
 model_list:
   - model_name: gemini-flash
     litellm_params:
-      model: gemini/gemini-2.5-flash
+      model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
     model_info:
       mode: chat
@@ -14,7 +17,7 @@ model_list:
 
   - model_name: gemini-pro
     litellm_params:
-      model: gemini/gemini-2.5-pro
+      model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
     model_info:
       mode: chat
@@ -22,28 +25,39 @@ model_list:
       supports_vision: true
       max_input_tokens: 1048576
 
+  - model_name: gemini-3.6-flash
+    litellm_params:
+      model: gemini/gemini-3.6-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.5-flash
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
   - model_name: gemini-2.5-flash
     litellm_params:
-      model: gemini/gemini-2.5-flash
+      model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
 
   - model_name: gemini-2.5-pro
     litellm_params:
-      model: gemini/gemini-2.5-pro
+      model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
 
-  # Alias legado del repo original
   - model_name: gemini-1.5-pro
     litellm_params:
-      model: gemini/gemini-2.5-pro
+      model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
 
 router_settings:
   num_retries: 2
   timeout: 180
   fallbacks:
-    - gemini-pro: [gemini-flash]
-    - gemini-2.5-pro: [gemini-2.5-flash, gemini-flash]
+    - gemini-flash: [gemini-3.5-flash, gemini-pro]
+    - gemini-pro: [gemini-flash, gemini-3.5-flash]
+    - gemini-2.5-flash: [gemini-flash, gemini-3.5-flash]
+    - gemini-2.5-pro: [gemini-pro, gemini-flash]
     - gemini-1.5-pro: [gemini-pro, gemini-flash]
 
 litellm_settings:
