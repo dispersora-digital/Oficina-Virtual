@@ -50,6 +50,7 @@ services:
       PAPERCLIP_DEPLOYMENT_MODE: ${PAPERCLIP_DEPLOYMENT_MODE:-authenticated}
       PAPERCLIP_DEPLOYMENT_EXPOSURE: ${PAPERCLIP_DEPLOYMENT_EXPOSURE:-private}
       PAPERCLIP_PUBLIC_URL: ${PAPERCLIP_PUBLIC_URL:-https://oficina.dispersora.digital}
+      PAPERCLIP_ALLOWED_HOSTNAMES: ${PAPERCLIP_ALLOWED_HOSTNAMES:-oficina.dispersora.digital,paperclip,localhost,127.0.0.1}
       BETTER_AUTH_URL: ${PAPERCLIP_PUBLIC_URL:-https://oficina.dispersora.digital}
       BETTER_AUTH_BASE_URL: ${PAPERCLIP_PUBLIC_URL:-https://oficina.dispersora.digital}
       BETTER_AUTH_TRUSTED_ORIGINS: ${PAPERCLIP_PUBLIC_URL:-https://oficina.dispersora.digital}
