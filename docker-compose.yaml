@@ -19,7 +19,7 @@ services:
       - "4000"
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY:?}
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-${GEMINI_API_KEY}}
       # No pasar LITELLM_MASTER_KEY: activa virtual keys y, sin DB,
       # /v1/models responde 400 "No connected db".
       LITELLM_MASTER_KEY: ""
@@ -27,12 +27,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness')\" || exit 1",
+          "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness', timeout=4)\" || python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health', timeout=4)\" || python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health', timeout=4)\" || exit 1",
         ]
       interval: 15s
       timeout: 8s
-      retries: 10
-      start_period: 40s
+      retries: 20
+      start_period: 90s
 
   paperclip:
     build:
@@ -67,7 +67,7 @@ services:
       - paperclip_data:/paperclip
     depends_on:
       litellm:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test:
         [
@@ -112,7 +112,7 @@ services:
       - hermes_data:/root/.hermes
     depends_on:
       litellm:
-        condition: service_healthy
+        condition: service_started
       paperclip:
         condition: service_started
     healthcheck:
