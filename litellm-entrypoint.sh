@@ -5,4 +5,7 @@
 # probes, discover_models) termina en HTTP 400 "No connected db".
 unset LITELLM_MASTER_KEY
 unset DATABASE_URL
+if [ -z "${GEMINI_API_KEY:-}" ] && [ -n "${GOOGLE_API_KEY:-}" ]; then
+  export GEMINI_API_KEY="${GOOGLE_API_KEY}"
+fi
 exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0
