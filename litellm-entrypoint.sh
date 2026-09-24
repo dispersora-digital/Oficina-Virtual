@@ -1,9 +1,6 @@
 #!/bin/sh
-# LiteLLM en red interna de Coolify: sin DB y sin virtual keys.
-# Coolify inyecta LITELLM_MASTER_KEY a todos los servicios; si LiteLLM
-# lo toma como master_key, cualquier Bearer distinto (Hermes, health
-# probes, discover_models) termina en HTTP 400 "No connected db".
-unset LITELLM_MASTER_KEY
+# LiteLLM >= 2026 exige LITELLM_MASTER_KEY. Hermes/Paperclip ya envían
+# Authorization: Bearer ${LITELLM_MASTER_KEY}. Sin DB / virtual keys.
 unset DATABASE_URL
 if [ -z "${GEMINI_API_KEY:-}" ] && [ -n "${GOOGLE_API_KEY:-}" ]; then
   export GEMINI_API_KEY="${GOOGLE_API_KEY}"
