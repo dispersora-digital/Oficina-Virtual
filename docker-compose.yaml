@@ -20,7 +20,6 @@ services:
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY:?}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-${GEMINI_API_KEY}}
-      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?}
     healthcheck:
       test:
         [
